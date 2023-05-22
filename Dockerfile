@@ -1,13 +1,9 @@
-FROM node
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y nginx && echo "daemon off;" >> /etc/nginx/nginx.conf && echo "<html><body><h1>Minha primeira imagem</h1></body></html>" > /var/www/html/index.html
 
-WORKDIR /usr/src/app
+VOLUME ["/etc/nginx", "/usr/share/nginx/html"]
+WORKDIR /usr/name/nginx/html
 
-COPY package.json .
-
-RUN npm install
-
-COPY . .
-
-EXPOSE 3000
-
-CMD ["node", "index.js"]
+EXPOSE 80
+CMD ["service", "nginx", "start"]
