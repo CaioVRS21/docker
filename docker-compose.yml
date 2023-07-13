@@ -1,63 +1,23 @@
-version: '3'
+version: "3.8"
 services:
 
-  postgres:
+  db:
+    container_name: postgres_container
     image: postgres
+    restart: always
+    enviroment:
+      POSGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: test_db
     ports:
-      - 5433:5432
+    - "5432:5432"
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    restart: always
     environment:
-      - POSTGRES_DB=consumo_gasolina
-      - POSTGRES_PASSWORD=123456
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    networks:
-      - backend
-    deploy:
-      placement:
-        constraints: [node.role == manager]
-
-  core:
-    image: chiavegatto/consumo-gasolina-service
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: root
     ports:
-      - 8000:8000
-    env_file: consumo_gasolina.conf
-    command: >-
-              /bin/sh -c "./wait-for-it.sh -t 60 postgres:5432 -- echo 'postgres is up'
-              && python -u manage.py migrate
-              && python -u production-server.py"
-    networks:
-      - backend
-    deploy:
-      mode: replicated
-      replicas: 2
-      labels: [APP=API]
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 256M
-      update_config:
-        parallelism: 2
-        delay: 10s
-      restart_policy:
-        condition: on-failure
-        delay: 10s
-        max_attempts: 3
-        window: 120s
-      placement:
-        constraints: [node.role == worker]
-
-  visualizer:
-    image: dockersamples/visualizer:stable
-    ports:
-      - "8080:8080"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
-    deploy:
-      placement:
-        constraints: [node.role == manager]
-
-networks:
-  backend:
-
-volumes:
-  db-data:
+     - "5050:80"
